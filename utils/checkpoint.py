@@ -58,8 +58,8 @@ class CheckpointManager:
         self.metadata = self._load_metadata()
 
         print(f"📁 Checkpoint manager initialized: {self.save_dir}")
-        print("   Save interval: {self.save_interval}")
-        print("   Max checkpoints: {self.max_checkpoints}")
+        print(f"   Save interval: {self.save_interval}")
+        print(f"   Max checkpoints: {self.max_checkpoints}")
 
     def _load_metadata(self) -> Dict[str, Any]:
         """Load checkpoint metadata from file."""
@@ -68,7 +68,7 @@ class CheckpointManager:
                 with open(self.checkpoint_metadata_file, 'r') as f:
                     return json.load(f)
             except (json.JSONDecodeError, IOError) as e:
-                print("⚠️  Warning: Could not load checkpoint metadata: {e}")
+                print(f"⚠️  Warning: Could not load checkpoint metadata: {e}")
 
         return {
             'checkpoints': [],
@@ -83,7 +83,7 @@ class CheckpointManager:
             with open(self.checkpoint_metadata_file, 'w') as f:
                 json.dump(self.metadata, f, indent=2)
         except IOError as e:
-            print("⚠️  Warning: Could not save checkpoint metadata: {e}")
+            print(f"⚠️  Warning: Could not save checkpoint metadata: {e}")
 
     def _cleanup_old_checkpoints(self) -> None:
         """Remove old checkpoints to maintain max_checkpoints limit."""
@@ -95,7 +95,7 @@ class CheckpointManager:
                 checkpoint_path = self.save_dir / checkpoint['filename']
                 if checkpoint_path.exists():
                     checkpoint_path.unlink()
-                    print("🗑️  Removed old checkpoint: {checkpoint['filename']}")
+                    print(f"🗑️  Removed old checkpoint: {checkpoint['filename']}")
 
             # Update metadata
             self.metadata['checkpoints'] = checkpoints[-self.max_checkpoints:]
@@ -155,7 +155,7 @@ class CheckpointManager:
                 with open(checkpoint_path, 'wb') as f:
                     pickle.dump(model, f)
             except Exception as e:
-                print("⚠️  Warning: Could not save model: {e}")
+                print(f"⚠️  Warning: Could not save model: {e}")
                 return None
 
         # Save optimizer state if provided
@@ -165,7 +165,7 @@ class CheckpointManager:
                 with open(optimizer_path, 'wb') as f:
                     pickle.dump(optimizer, f)
             except Exception as e:
-                print("⚠️  Warning: Could not save optimizer: {e}")
+                print(f"⚠️  Warning: Could not save optimizer: {e}")
 
         # Save checkpoint metadata
         checkpoint_info = {
@@ -192,10 +192,10 @@ class CheckpointManager:
         self._save_metadata()
         self._cleanup_old_checkpoints()
 
-        print("💾 Checkpoint saved: {checkpoint_name}")
-        print("   Step: {step}, Episode: {episode}")
+        print(f"💾 Checkpoint saved: {checkpoint_name}")
+        print(f"   Step: {step}, Episode: {episode}")
         if metrics:
-            print("   Metrics: {metrics}")
+            print(f"   Metrics: {metrics}")
 
         return str(checkpoint_path)
 
@@ -230,7 +230,7 @@ class CheckpointManager:
             return {}, False
 
         if not checkpoint_file.exists():
-            print("❌ Checkpoint file not found: {checkpoint_file}")
+            print(f"❌ Checkpoint file not found: {checkpoint_file}")
             return {}, False
 
         try:
@@ -264,14 +264,14 @@ class CheckpointManager:
             # Load checkpoint metadata
             checkpoint_data = self._get_checkpoint_data(checkpoint_file)
 
-            print("✅ Checkpoint loaded: {checkpoint_file.name}")
-            print("   Step: {checkpoint_data.get('step', 'Unknown')}")
-            print("   Episode: {checkpoint_data.get('episode', 'Unknown')}")
+            print(f"✅ Checkpoint loaded: {checkpoint_file.name}")
+            print(f"   Step: {checkpoint_data.get('step', 'Unknown')}")
+            print(f"   Episode: {checkpoint_data.get('episode', 'Unknown')}")
 
             return checkpoint_data, True
 
         except Exception as e:
-            print("❌ Error loading checkpoint: {e}")
+            print(f"❌ Error loading checkpoint: {e}")
             return {}, False
 
     def _get_checkpoint_data(self, checkpoint_file: Path) -> Dict[str, Any]:
@@ -312,7 +312,7 @@ class CheckpointManager:
     def cleanup(self) -> None:
         """Clean up checkpoint manager resources."""
         self._save_metadata()
-        print("🧹 Checkpoint manager cleanup completed: {self.save_dir}")
+        print(f"🧹 Checkpoint manager cleanup completed: {self.save_dir}")
 
 
 def create_checkpoint_manager(
@@ -396,7 +396,7 @@ def cleanup_checkpoint_directory(
     files_to_remove = checkpoint_files[:-keep_latest]
     for file_path in files_to_remove:
         file_path.unlink()
-        print("🗑️  Removed old checkpoint: {file_path.name}")
+        print(f"🗑️  Removed old checkpoint: {file_path.name}")
 
 
 if __name__ == "__main__":
@@ -412,9 +412,9 @@ if __name__ == "__main__":
     )
 
     # Test metadata operations
-    print("Checkpoints: {manager.list_checkpoints()}")
-    print("Latest: {manager.get_latest_checkpoint()}")
-    print("Best: {manager.get_best_checkpoint()}")
+    print(f"Checkpoints: {manager.list_checkpoints()}")
+    print(f"Latest: {manager.get_latest_checkpoint()}")
+    print(f"Best: {manager.get_best_checkpoint()}")
 
     # Test cleanup
     manager.cleanup()

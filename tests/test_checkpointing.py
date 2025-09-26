@@ -185,7 +185,7 @@ class TestCheckpointUtilities:
         # Create some checkpoint files with different timestamps
         checkpoint_files = []
         for i in range(3):
-            checkpoint_file = self.checkpoint_dir / "checkpoint_{i}.ckpt"
+            checkpoint_file = self.checkpoint_dir / f"checkpoint_{i}.ckpt"
             checkpoint_file.touch()
             checkpoint_files.append(checkpoint_file)
 
@@ -210,7 +210,7 @@ class TestCheckpointUtilities:
         # Create more checkpoint files than keep_latest
         checkpoint_files = []
         for i in range(10):
-            checkpoint_file = self.checkpoint_dir / "checkpoint_{i}.ckpt"
+            checkpoint_file = self.checkpoint_dir / f"checkpoint_{i}.ckpt"
             checkpoint_file.touch()
             checkpoint_files.append(checkpoint_file)
 
