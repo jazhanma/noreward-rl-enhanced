@@ -1,0 +1,69 @@
+# Super Mario Bros Environment Configuration
+# Platformer environment for curiosity-driven exploration
+
+name: "SuperMarioBros-v0"
+type: "mario"
+description: "Super Mario Bros - Platformer with distance-based rewards"
+
+# Environment-specific parameters
+env_params:
+  world: 1
+  stage: 1
+  frame_skip: 6
+  resolution: [42, 42]
+  
+# Observation and action spaces
+spaces:
+  observation:
+    type: "Box"
+    shape: [42, 42, 3]  # height, width, channels (RGB)
+    low: 0
+    high: 255
+    dtype: "uint8"
+  action:
+    type: "Discrete"
+    n: 12  # Simple movement actions
+    dtype: "int64"
+
+# Training parameters optimized for Mario
+training:
+  max_episodes: 5000
+  max_steps: 500000
+  learning_rate: 0.0001
+  gamma: 0.99
+  entropy_beta: 0.0005
+  prediction_beta: 0.2  # High curiosity for exploration
+  
+# Environment wrappers
+wrappers:
+  - name: "FrameSkip"
+    skip: 6
+  - name: "ResizeObservation"
+    width: 42
+    height: 42
+  - name: "GrayScaleObservation"
+    enabled: false
+  - name: "FrameStack"
+    num_stack: 4
+  - name: "NormalizeObservation"
+    enabled: true
+  - name: "RewardClipping"
+    min_reward: 0.0
+    max_reward: 1.0
+
+# Logging and monitoring
+logging:
+  log_interval: 50
+  save_interval: 250
+  eval_interval: 500
+  
+# Reproducibility
+reproducibility:
+  seed: 42
+  deterministic: true
+  
+# Performance targets
+targets:
+  solved_reward: 500.0
+  solved_episodes: 200
+  max_training_time: "12 hours"

@@ -1,0 +1,67 @@
+# Atari Hard Exploration Environment Configuration
+# Challenging Atari games for curiosity-driven exploration
+
+name: "MontezumaRevenge-v5"
+type: "atari_hard"
+description: "Montezuma's Revenge - Hard exploration Atari game"
+
+# Environment-specific parameters
+env_params:
+  game: "MontezumaRevenge"
+  version: "v5"
+  frame_skip: 4
+  resolution: [84, 84]
+  grayscale: false
+  
+# Observation and action spaces
+spaces:
+  observation:
+    type: "Box"
+    shape: [84, 84, 4]  # height, width, channels (RGB + stacked frames)
+    low: 0
+    high: 255
+    dtype: "uint8"
+  action:
+    type: "Discrete"
+    n: 18  # Atari action space
+    dtype: "int64"
+
+# Training parameters optimized for hard exploration
+training:
+  max_episodes: 20000
+  max_steps: 2000000
+  learning_rate: 0.0001
+  gamma: 0.99
+  entropy_beta: 0.01
+  prediction_beta: 0.5  # Very high curiosity for hard exploration
+  
+# Environment wrappers
+wrappers:
+  - name: "AtariPreprocessing"
+    frame_skip: 4
+    screen_size: 84
+    grayscale: false
+  - name: "FrameStack"
+    num_stack: 4
+  - name: "NormalizeObservation"
+    enabled: true
+  - name: "RewardClipping"
+    min_reward: -1.0
+    max_reward: 1.0
+
+# Logging and monitoring
+logging:
+  log_interval: 200
+  save_interval: 1000
+  eval_interval: 2000
+  
+# Reproducibility
+reproducibility:
+  seed: 42
+  deterministic: true
+  
+# Performance targets
+targets:
+  solved_reward: 10000.0
+  solved_episodes: 1000
+  max_training_time: "48 hours"

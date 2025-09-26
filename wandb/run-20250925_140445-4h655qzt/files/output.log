@@ -1,0 +1,21 @@
+Weights & Biases initialized: noreward-rl-simple/simple-CartPole-v1-1758833443
+Creating environment: CartPole-v1
+Environment created: <TimeLimit<OrderEnforcing<PassiveEnvChecker<CartPoleEnv<CartPole-v1>>>>>
+Observation space: Box([-4.8               -inf -0.41887903        -inf], [4.8               inf 0.41887903        inf], (4,), float32)
+Action space: Discrete(2)
+Starting training for 3 episodes...
+Episode 1/3
+  Reward: 11.00, Length: 11, Time: 0.00s
+Episode 2/3
+  Reward: 14.00, Length: 14, Time: 0.00s
+Episode 3/3
+  Reward: 26.00, Length: 26, Time: 0.00s
+==================================================
+TRAINING SUMMARY
+==================================================
+Environment: CartPole-v1
+Episodes: 3
+Mean Reward: 17.00
+Mean Length: 17.0
+Best Reward: 26.00
+Worst Reward: 11.00

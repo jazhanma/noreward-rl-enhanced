@@ -1,0 +1,103 @@
+# Curiosity Baseline Experiment Configuration
+# Standard curiosity-driven exploration experiment
+
+experiment:
+  name: "curiosity_baseline"
+  description: "Baseline curiosity-driven exploration experiment"
+  tags: ["curiosity", "baseline", "exploration"]
+  
+# Model architecture
+model:
+  type: "A3C"
+  design_head: "universe"
+  unsup_type: "action"  # action, state, stateAenc
+  
+  # Network architecture
+  architecture:
+    hidden_sizes: [64, 32]
+    activation: "relu"
+    use_lstm: true
+    lstm_size: 256
+    
+  # Curiosity module
+  curiosity:
+    forward_model_lr: 0.0001
+    inverse_model_lr: 0.0001
+    feature_dim: 256
+    hidden_dim: 512
+
+# Training configuration
+training:
+  num_workers: 4
+  max_global_steps: 1000000
+  learning_rate: 0.0001
+  gamma: 0.99
+  entropy_beta: 0.01
+  prediction_beta: 0.2
+  
+  # Optimization
+  optimizer: "adam"
+  gradient_clip_norm: 0.5
+  value_loss_coef: 0.5
+  entropy_coef: 0.01
+  
+  # Training schedule
+  lr_schedule:
+    type: "linear_decay"
+    initial_lr: 0.0001
+    final_lr: 0.00001
+    decay_steps: 500000
+
+# Environment configuration
+environment:
+  env_id: "CartPole-v1"
+  env_wrap: true
+  no_reward: false
+  no_life_reward: false
+  
+  # Environment-specific overrides
+  overrides:
+    max_episode_steps: 500
+    frame_skip: 1
+
+# Logging and monitoring
+logging:
+  use_wandb: true
+  use_tensorboard: true
+  log_dir: "logs/curiosity_baseline"
+  experiment_name: "curiosity_baseline_{timestamp}"
+  
+  # Logging intervals
+  log_interval: 100
+  save_interval: 1000
+  eval_interval: 5000
+  
+  # Metrics to track
+  metrics:
+    - "episode_reward"
+    - "episode_length"
+    - "policy_loss"
+    - "value_loss"
+    - "curiosity_loss"
+    - "entropy"
+    - "learning_rate"
+
+# Checkpointing
+checkpointing:
+  save_dir: "checkpoints/curiosity_baseline"
+  save_interval: 1000
+  max_checkpoints: 5
+  resume: false
+
+# Reproducibility
+reproducibility:
+  seed: 42
+  deterministic: true
+  use_deterministic_ops: true
+
+# Evaluation
+evaluation:
+  eval_episodes: 10
+  eval_frequency: 5000
+  record_video: true
+  video_dir: "videos/curiosity_baseline"

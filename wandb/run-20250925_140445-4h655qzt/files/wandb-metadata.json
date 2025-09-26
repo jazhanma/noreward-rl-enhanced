@@ -1,0 +1,51 @@
+{
+    "os": "macOS-13.2.1-x86_64-i386-64bit",
+    "python": "3.12.4",
+    "heartbeatAt": "2025-09-25T21:04:46.537700",
+    "startedAt": "2025-09-25T21:04:45.860615",
+    "docker": null,
+    "cuda": null,
+    "args": [
+        "--env-id",
+        "CartPole-v1",
+        "--num-episodes",
+        "3",
+        "--use-wandb"
+    ],
+    "state": "running",
+    "program": "/Users/yujriohanma/Pathak22/noreward-rl/src/simple_train.py",
+    "codePathLocal": "src/simple_train.py",
+    "codePath": "src/simple_train.py",
+    "git": {
+        "remote": "https://github.com/pathak22/noreward-rl",
+        "commit": "3e220c2177fc253916f12d980957fc40579d577a"
+    },
+    "email": "92910586+jazhanma@users.noreply.github.com",
+    "root": "/Users/yujriohanma/Pathak22/noreward-rl",
+    "host": "sfs-wifi-dhcp-10-143-221-137.wifi.sfsu.edu",
+    "username": "yujriohanma",
+    "executable": "/Library/Frameworks/Python.framework/Versions/3.12/bin/python3",
+    "cpu_count": 4,
+    "cpu_count_logical": 8,
+    "cpu_freq": {
+        "current": 1400,
+        "min": 1400,
+        "max": 1400
+    },
+    "cpu_freq_per_core": [
+        {
+            "current": 1400,
+            "min": 1400,
+            "max": 1400
+        }
+    ],
+    "disk": {
+        "/": {
+            "total": 233.46913528442383,
+            "used": 12.22506332397461
+        }
+    },
+    "memory": {
+        "total": 8.0
+    }
+}

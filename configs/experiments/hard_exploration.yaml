@@ -1,0 +1,114 @@
+# Hard Exploration Experiment Configuration
+# Experiment for challenging environments like Montezuma's Revenge
+
+experiment:
+  name: "hard_exploration"
+  description: "Hard exploration experiment for challenging environments"
+  tags: ["curiosity", "hard_exploration", "atari", "montezuma"]
+  
+# Model architecture
+model:
+  type: "A3C"
+  design_head: "nature"  # Optimized for Atari
+  unsup_type: "state"  # State-based curiosity for hard exploration
+  
+  # Network architecture
+  architecture:
+    hidden_sizes: [512, 256]
+    activation: "relu"
+    use_lstm: true
+    lstm_size: 512
+    
+  # Curiosity module (enhanced for hard exploration)
+  curiosity:
+    forward_model_lr: 0.0001
+    inverse_model_lr: 0.0001
+    feature_dim: 512
+    hidden_dim: 1024
+    prediction_beta: 0.5  # Higher curiosity weight
+
+# Training configuration
+training:
+  num_workers: 8  # More workers for complex environments
+  max_global_steps: 2000000
+  learning_rate: 0.0001
+  gamma: 0.99
+  entropy_beta: 0.01
+  prediction_beta: 0.5  # High curiosity for exploration
+  
+  # Optimization
+  optimizer: "adam"
+  gradient_clip_norm: 1.0
+  value_loss_coef: 0.5
+  entropy_coef: 0.01
+  
+  # Training schedule
+  lr_schedule:
+    type: "cosine_decay"
+    initial_lr: 0.0001
+    final_lr: 0.00001
+    decay_steps: 1000000
+
+# Environment configuration
+environment:
+  env_id: "MontezumaRevenge-v5"
+  env_wrap: true
+  no_reward: true  # Pure curiosity-driven
+  no_life_reward: true
+  
+  # Environment-specific overrides
+  overrides:
+    frame_skip: 4
+    resolution: [84, 84]
+    grayscale: false
+
+# Logging and monitoring
+logging:
+  use_wandb: true
+  use_tensorboard: true
+  log_dir: "logs/hard_exploration"
+  experiment_name: "hard_exploration_{timestamp}"
+  
+  # Logging intervals
+  log_interval: 200
+  save_interval: 2000
+  eval_interval: 10000
+  
+  # Metrics to track
+  metrics:
+    - "episode_reward"
+    - "episode_length"
+    - "policy_loss"
+    - "value_loss"
+    - "curiosity_loss"
+    - "entropy"
+    - "learning_rate"
+    - "exploration_bonus"
+    - "novelty_score"
+
+# Checkpointing
+checkpointing:
+  save_dir: "checkpoints/hard_exploration"
+  save_interval: 2000
+  max_checkpoints: 10
+  resume: false
+
+# Reproducibility
+reproducibility:
+  seed: 42
+  deterministic: true
+  use_deterministic_ops: true
+
+# Evaluation
+evaluation:
+  eval_episodes: 5
+  eval_frequency: 10000
+  record_video: true
+  video_dir: "videos/hard_exploration"
+  
+# Hard exploration specific settings
+hard_exploration:
+  curiosity_boost: 2.0
+  exploration_bonus: 0.1
+  novelty_threshold: 0.5
+  memory_size: 10000

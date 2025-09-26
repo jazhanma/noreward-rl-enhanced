@@ -1,0 +1,32 @@
+wandb_version: 1
+
+_wandb:
+  desc: null
+  value:
+    python_version: 3.12.4
+    cli_version: 0.16.6
+    framework: keras
+    is_jupyter_run: false
+    is_kaggle_kernel: false
+    start_time: 1758837271.0
+    t:
+      1:
+      - 2
+      - 3
+      - 49
+      - 55
+      2:
+      - 2
+      - 3
+      - 49
+      - 55
+      3:
+      - 2
+      - 13
+      - 23
+      - 61
+      4: 3.12.4
+      5: 0.16.6
+      8:
+      - 5
+      13: darwin-x86_64

@@ -1,0 +1,66 @@
+# VizDoom Environment Configuration
+# First-person shooter environment for curiosity-driven exploration
+
+name: "VizDoomMyWayHome-v0"
+type: "vizdoom"
+description: "VizDoom My Way Home - Navigate to target location using curiosity"
+
+# Environment-specific parameters
+env_params:
+  scenario: "my_way_home"
+  difficulty: "sparse"  # dense, sparse, very_sparse
+  frame_skip: 4
+  resolution: [42, 42]
+  
+# Observation and action spaces
+spaces:
+  observation:
+    type: "Box"
+    shape: [42, 42, 4]  # height, width, channels (RGB + depth)
+    low: 0
+    high: 255
+    dtype: "uint8"
+  action:
+    type: "Discrete"
+    n: 3  # move_forward, turn_left, turn_right
+    dtype: "int64"
+
+# Training parameters optimized for VizDoom
+training:
+  max_episodes: 10000
+  max_steps: 1000000
+  learning_rate: 0.0001
+  gamma: 0.99
+  entropy_beta: 0.01
+  prediction_beta: 0.2  # Higher curiosity for sparse rewards
+  
+# Environment wrappers
+wrappers:
+  - name: "FrameSkip"
+    skip: 4
+  - name: "ResizeObservation"
+    width: 42
+    height: 42
+  - name: "GrayScaleObservation"
+    enabled: false
+  - name: "FrameStack"
+    num_stack: 4
+  - name: "NormalizeObservation"
+    enabled: true
+
+# Logging and monitoring
+logging:
+  log_interval: 100
+  save_interval: 500
+  eval_interval: 1000
+  
+# Reproducibility
+reproducibility:
+  seed: 42
+  deterministic: true
+  
+# Performance targets
+targets:
+  solved_reward: 1000.0
+  solved_episodes: 500
+  max_training_time: "24 hours"

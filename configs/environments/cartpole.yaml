@@ -1,0 +1,59 @@
+# CartPole-v1 Environment Configuration
+# Classic control environment for testing and development
+
+name: "CartPole-v1"
+type: "classic_control"
+description: "Classic control environment - balance a pole on a cart"
+
+# Environment-specific parameters
+env_params:
+  max_episode_steps: 500
+  render_mode: "rgb_array"
+  
+# Observation and action spaces
+spaces:
+  observation:
+    type: "Box"
+    shape: [4]
+    low: [-4.8, -inf, -0.41887903, -inf]
+    high: [4.8, inf, 0.41887903, inf]
+    dtype: "float32"
+  action:
+    type: "Discrete"
+    n: 2
+    dtype: "int64"
+
+# Training parameters optimized for CartPole
+training:
+  max_episodes: 1000
+  max_steps: 100000
+  learning_rate: 0.0001
+  gamma: 0.99
+  entropy_beta: 0.01
+  prediction_beta: 0.01
+  
+# Environment wrappers
+wrappers:
+  - name: "TimeLimit"
+    max_episode_steps: 500
+  - name: "NormalizeObservation"
+    enabled: false
+  - name: "FrameStack"
+    enabled: false
+
+# Logging and monitoring
+logging:
+  log_interval: 10
+  save_interval: 50
+  eval_interval: 100
+  
+# Reproducibility
+reproducibility:
+  seed: 42
+  deterministic: true
+  
+# Performance targets
+targets:
+  solved_reward: 475.0
+  solved_episodes: 100
+  max_training_time: "2 hours"

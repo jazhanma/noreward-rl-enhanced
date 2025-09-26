@@ -1,0 +1,31 @@
+# NoReward-RL: Curiosity-Driven Exploration by Self-supervised Prediction
+# Pinned dependencies for reproducible builds
+# Python 3.8-3.11 supported
+
+# Core ML/RL dependencies
+gymnasium==1.0.0
+gymnasium[atari]==1.0.0
+gymnasium[other]==1.0.0
+tensorflow==2.16.0
+numpy==1.26.4
+scipy==1.14.1
+Pillow==11.0.0
+
+# Logging and monitoring
+wandb==0.16.6
+tensorboard==2.16.2
+
+# Environment specific (optional - install as needed)
+# vizdoom==1.2.0
+# gym-super-mario-bros==7.4.0
+# stable-baselines3[extra]==2.2.1
+
+# Utilities
+pyyaml==6.0.2
+tqdm==4.66.5
+matplotlib==3.9.2
+opencv-python==4.10.0.84
+
+# Core Python dependencies
+typing-extensions==4.12.2
+pathlib2==2.3.7; python_version < "3.4"

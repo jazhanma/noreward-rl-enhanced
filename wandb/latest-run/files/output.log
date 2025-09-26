@@ -1,0 +1,25 @@
+Weights & Biases initialized: noreward-rl-config/curiosity_baseline_1758837269
+TensorBoard logging to: logs
+📁 Checkpoint manager initialized: checkpoints/curiosity_baseline
+   Save interval: 1000
+   Max checkpoints: 5
+Creating environment: CartPole-v1
+🌱 Environment seeded with: 42
+Environment created: <TimeLimit<OrderEnforcing<PassiveEnvChecker<CartPoleEnv<CartPole-v1>>>>>
+Observation space: Box([-4.8               -inf -0.41887903        -inf], [4.8               inf 0.41887903        inf], (4,), float32)
+Action space: Discrete(2)
+Starting training for 3 episodes...
+Episode 1/3
+  Reward: 17.00, Length: 17, Time: 0.01s
+============================================================
+TRAINING SUMMARY
+============================================================
+Experiment: curiosity_baseline
+Environment: CartPole-v1
+Episodes: 3
+Mean Reward: 20.00
+Mean Length: 20.0
+Best Reward: 27.00
+Worst Reward: 16.00
+Performance Targets:
+❌ Not solved (Target: 475.0, Best: 27.00)
