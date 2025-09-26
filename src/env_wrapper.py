@@ -140,7 +140,7 @@ class SkipEnv(gym.Wrapper):
         terminated = False
         truncated = False
         info = {}
-        
+
         for i in range(self.skip):
             obs, reward, terminated, truncated, step_info = self.env.step(action)
             total_reward += reward
@@ -148,7 +148,7 @@ class SkipEnv(gym.Wrapper):
             info["steps"] = i + 1
             if terminated or truncated:
                 break
-                
+
         return obs, total_reward, terminated, truncated, info
 
 
@@ -157,9 +157,9 @@ class MarioEnv(gym.Wrapper):
 
     def __init__(self, env: gym.Env, tiles_env: bool = False):
         """Reset mario environment without actually restarting fceux everytime.
-        
+
         This speeds up unrolling by approximately 10 times.
-        
+
         Args:
             env: The mario environment to wrap
             tiles_env: Whether to use tiles environment
@@ -181,13 +181,13 @@ class MarioEnv(gym.Wrapper):
             sys.stdout.flush()
             obs, info = self.env.reset(seed=seed, options=options)
             time.sleep(40)
-        
+
         obs, _, terminated, truncated, info = self.env.step(7)  # take right once to start game
         if info.get("ignore", False):  # assuming this happens only in beginning
             self.reset_count = -1
             self.env.close()
             return self.reset(seed=seed, options=options)
-        
+
         self.reset_count = info.get("iteration", -1)
         if self.tiles_env:
             return obs, info
@@ -199,7 +199,7 @@ class MarioEnv(gym.Wrapper):
         # Use iteration count to determine if episode is done
         done = info["iteration"] > self.reset_count
         reward = float(reward) / self.max_distance  # note: we do not use this rewards at all.
-        
+
         if self.tiles_env:
             return obs, reward, done, done, info
         return obs[24:-12, 8:-8, :], reward, done, done, info

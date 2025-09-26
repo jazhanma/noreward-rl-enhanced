@@ -1,4 +1,4 @@
-from __future__ import print_functionwhere 
+from __future__ import print_functionwhere
 import numpy as np
 import tensorflow as tf
 import tensorflow.contrib.rnn as rnn
@@ -212,7 +212,7 @@ class LSTMPolicy(object):
         # tf.add_to_collection('sample', self.sample)
         # tf.add_to_collection('state_out_0', self.state_out[0])
         # tf.add_to_collection('state_out_1', self.state_out[1])
-        # tf.add_to_collection('vf', self.vf)
+        # tf.add_to_collection('v', self.vf)
 
     def get_initial_features(self):
         # Call this function to get reseted lstm memory cells

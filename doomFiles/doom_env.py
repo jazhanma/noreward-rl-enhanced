@@ -376,7 +376,7 @@ class MetaDoomEnv(DoomEnv):
         return super(MetaDoomEnv, self)._start_episode()
 
     def change_level(self, new_level=None):
-        if new_level is not None and self.locked_levels[new_level] == False:
+        if new_level is not None and self.locked_levels[new_level] is False:
             self.find_new_level = False
             self.level = new_level
             self.reset()

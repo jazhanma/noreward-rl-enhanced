@@ -15,10 +15,10 @@ from constants import constants
 
 def normalized_columns_initializer(std: float = 1.0) -> tf.keras.initializers.Initializer:
     """Create a normalized columns initializer.
-    
+
     Args:
         std: Standard deviation for initialization
-        
+
     Returns:
         Initializer function
     """
@@ -31,12 +31,12 @@ def normalized_columns_initializer(std: float = 1.0) -> tf.keras.initializers.In
 
 def cosine_loss(A: tf.Tensor, B: tf.Tensor, name: str) -> tf.Tensor:
     """Compute cosine loss between two tensors.
-    
+
     Args:
         A: First tensor (BatchSize, d)
         B: Second tensor (BatchSize, d)
         name: Name for the loss operation
-        
+
     Returns:
         Cosine loss tensor
     """
@@ -49,10 +49,10 @@ def cosine_loss(A: tf.Tensor, B: tf.Tensor, name: str) -> tf.Tensor:
 
 def flatten(x: tf.Tensor) -> tf.Tensor:
     """Flatten tensor to 2D.
-    
+
     Args:
         x: Input tensor
-        
+
     Returns:
         Flattened tensor
     """
@@ -70,7 +70,7 @@ def conv2d(
     collections: Optional[List[str]] = None,
 ) -> tf.Tensor:
     """2D convolution layer with Xavier initialization.
-    
+
     Args:
         x: Input tensor
         num_filters: Number of output filters
@@ -80,7 +80,7 @@ def conv2d(
         pad: Padding type
         dtype: Data type
         collections: Variable collections
-        
+
     Returns:
         Convolved tensor
     """
@@ -94,15 +94,15 @@ def conv2d(
         w_bound = np.sqrt(6. / (fan_in + fan_out))
 
         w = tf.get_variable(
-            "W", 
-            filter_shape, 
-            dtype, 
+            "W",
+            filter_shape,
+            dtype,
             tf.random_uniform_initializer(-w_bound, w_bound),
             collections=collections
         )
         b = tf.get_variable(
-            "b", 
-            [1, 1, 1, num_filters], 
+            "b",
+            [1, 1, 1, num_filters],
             initializer=tf.constant_initializer(0.0),
             collections=collections
         )
@@ -121,7 +121,7 @@ def deconv2d(
     prev_num_feat: Optional[int] = None,
 ) -> tf.Tensor:
     """2D transposed convolution layer.
-    
+
     Args:
         x: Input tensor
         out_shape: Output shape
@@ -132,7 +132,7 @@ def deconv2d(
         dtype: Data type
         collections: Variable collections
         prev_num_feat: Previous number of features
-        
+
     Returns:
         Deconvolved tensor
     """
@@ -148,15 +148,15 @@ def deconv2d(
         w_bound = np.sqrt(6. / (fan_in + fan_out))
 
         w = tf.get_variable(
-            "W", 
-            filter_shape, 
-            dtype, 
+            "W",
+            filter_shape,
+            dtype,
             tf.random_uniform_initializer(-w_bound, w_bound),
             collections=collections
         )
         b = tf.get_variable(
-            "b", 
-            [num_filters], 
+            "b",
+            [num_filters],
             initializer=tf.constant_initializer(0.0),
             collections=collections
         )
@@ -172,14 +172,14 @@ def linear(
     bias_init: float = 0,
 ) -> tf.Tensor:
     """Linear layer.
-    
+
     Args:
         x: Input tensor
         size: Output size
         name: Variable scope name
         initializer: Weight initializer
         bias_init: Bias initialization value
-        
+
     Returns:
         Linear transformation result
     """
@@ -190,11 +190,11 @@ def linear(
 
 def categorical_sample(logits: tf.Tensor, d: int) -> tf.Tensor:
     """Sample from categorical distribution.
-    
+
     Args:
         logits: Logits tensor
         d: Number of categories
-        
+
     Returns:
         One-hot sampled tensor
     """
@@ -204,12 +204,12 @@ def categorical_sample(logits: tf.Tensor, d: int) -> tf.Tensor:
 
 def inverse_universe_head(x: tf.Tensor, final_shape: List[int], n_convs: int = 4) -> tf.Tensor:
     """Inverse universe head for state prediction.
-    
+
     Args:
         x: Input features [None, 288]
         final_shape: Target output shape
         n_convs: Number of convolution layers
-        
+
     Returns:
         Reconstructed state [None, height, width, channels]
     """
@@ -217,57 +217,57 @@ def inverse_universe_head(x: tf.Tensor, final_shape: List[int], n_convs: int = 4
     bs = tf.shape(x)[0]
     deconv_shape1 = [final_shape[1]]
     deconv_shape2 = [final_shape[2]]
-    
+
     for i in range(n_convs):
         deconv_shape1.append((deconv_shape1[-1] - 1) // 2 + 1)
         deconv_shape2.append((deconv_shape2[-1] - 1) // 2 + 1)
-    
+
     inshapeprod = np.prod(x.get_shape().as_list()[1:]) / 32.0
     assert inshapeprod == deconv_shape1[-1] * deconv_shape2[-1]
 
     x = tf.reshape(x, [-1, deconv_shape1[-1], deconv_shape2[-1], 32])
     deconv_shape1 = deconv_shape1[:-1]
     deconv_shape2 = deconv_shape2[:-1]
-    
+
     for i in range(n_convs - 1):
         x = tf.nn.elu(deconv2d(
-            x, 
+            x,
             [bs, deconv_shape1[-1], deconv_shape2[-1], 32],
-            f"dl{i + 1}", 
-            [3, 3], 
-            [2, 2], 
+            "dl{i + 1}",
+            [3, 3],
+            [2, 2],
             prev_num_feat=32
         ))
         deconv_shape1 = deconv_shape1[:-1]
         deconv_shape2 = deconv_shape2[:-1]
-    
+
     x = deconv2d(x, [bs] + final_shape[1:], "dl4", [3, 3], [2, 2], prev_num_feat=32)
     return x
 
 
 def universe_head(x: tf.Tensor, n_convs: int = 4) -> tf.Tensor:
     """Universe head for feature extraction.
-    
+
     Args:
         x: Input state [None, height, width, channels]
         n_convs: Number of convolution layers
-        
+
     Returns:
         Features [None, 288]
     """
     print('Using universe head design')
     for i in range(n_convs):
-        x = tf.nn.elu(conv2d(x, 32, f"l{i + 1}", [3, 3], [2, 2]))
+        x = tf.nn.elu(conv2d(x, 32, "l{i + 1}", [3, 3], [2, 2]))
     x = flatten(x)
     return x
 
 
 def nips_head(x: tf.Tensor) -> tf.Tensor:
     """NIPS 2013 DQN head.
-    
+
     Args:
         x: Input state [None, 84, 84, 4]
-        
+
     Returns:
         Features [None, 256]
     """
@@ -281,10 +281,10 @@ def nips_head(x: tf.Tensor) -> tf.Tensor:
 
 def nature_head(x: tf.Tensor) -> tf.Tensor:
     """Nature 2015 DQN head.
-    
+
     Args:
         x: Input state [None, 84, 84, 4]
-        
+
     Returns:
         Features [None, 512]
     """
@@ -299,10 +299,10 @@ def nature_head(x: tf.Tensor) -> tf.Tensor:
 
 def doom_head(x: tf.Tensor) -> tf.Tensor:
     """Doom-specific head.
-    
+
     Args:
         x: Input state [None, 120, 160, 1]
-        
+
     Returns:
         Features [None, 256]
     """
@@ -318,15 +318,15 @@ def doom_head(x: tf.Tensor) -> tf.Tensor:
 
 class LSTMPolicy:
     """LSTM-based policy network for A3C."""
-    
+
     def __init__(
-        self, 
-        ob_space: Tuple[int, ...], 
-        ac_space: int, 
+        self,
+        ob_space: Tuple[int, ...],
+        ac_space: int,
         design_head: str = 'universe'
     ):
         """Initialize LSTM policy.
-        
+
         Args:
             ob_space: Observation space shape
             ac_space: Action space size
@@ -334,7 +334,7 @@ class LSTMPolicy:
         """
         self.x = x = tf.placeholder(tf.float32, [None] + list(ob_space), name='x')
         size = 256
-        
+
         # Apply head design
         if design_head == 'nips':
             x = nips_head(x)
@@ -369,7 +369,7 @@ class LSTMPolicy:
         )
         lstm_c, lstm_h = lstm_state
         x = tf.reshape(lstm_outputs, [-1, size])
-        
+
         # Output layers
         self.vf = tf.reshape(linear(x, 1, "value", normalized_columns_initializer(1.0)), [-1])
         self.state_out = [lstm_c[:1, :], lstm_h[:1, :]]
@@ -384,25 +384,25 @@ class LSTMPolicy:
 
     def get_initial_features(self) -> List[np.ndarray]:
         """Get initial LSTM features.
-        
+
         Returns:
             Initial LSTM state
         """
         return self.state_init
 
     def act(
-        self, 
-        ob: np.ndarray, 
-        c: np.ndarray, 
+        self,
+        ob: np.ndarray,
+        c: np.ndarray,
         h: np.ndarray
     ) -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
         """Get action from policy.
-        
+
         Args:
             ob: Current observation
             c: LSTM cell state
             h: LSTM hidden state
-            
+
         Returns:
             Tuple of (action, value, new_c, new_h)
         """
@@ -413,18 +413,18 @@ class LSTMPolicy:
         )
 
     def act_inference(
-        self, 
-        ob: np.ndarray, 
-        c: np.ndarray, 
+        self,
+        ob: np.ndarray,
+        c: np.ndarray,
         h: np.ndarray
     ) -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
         """Get action with probabilities for inference.
-        
+
         Args:
             ob: Current observation
             c: LSTM cell state
             h: LSTM hidden state
-            
+
         Returns:
             Tuple of (probs, sample, value, new_c, new_h)
         """
@@ -436,12 +436,12 @@ class LSTMPolicy:
 
     def value(self, ob: np.ndarray, c: np.ndarray, h: np.ndarray) -> float:
         """Get value estimate.
-        
+
         Args:
             ob: Current observation
             c: LSTM cell state
             h: LSTM hidden state
-            
+
         Returns:
             Value estimate
         """
@@ -451,15 +451,15 @@ class LSTMPolicy:
 
 class StateActionPredictor:
     """State-action predictor for ICM."""
-    
+
     def __init__(
-        self, 
-        ob_space: Tuple[int, ...], 
-        ac_space: int, 
+        self,
+        ob_space: Tuple[int, ...],
+        ac_space: int,
         design_head: str = 'universe'
     ):
         """Initialize state-action predictor.
-        
+
         Args:
             ob_space: Observation space shape
             ac_space: Action space size
@@ -499,7 +499,7 @@ class StateActionPredictor:
         aindex = tf.argmax(asample, axis=1)
         logits = linear(g, ac_space, "glast", normalized_columns_initializer(0.01))
         self.invloss = tf.reduce_mean(
-            tf.nn.sparse_softmax_cross_entropy_with_logits(logits, aindex), 
+            tf.nn.sparse_softmax_cross_entropy_with_logits(logits, aindex),
             name="invloss"
         )
         self.ainvprobs = tf.nn.softmax(logits, dim=-1)
@@ -509,7 +509,7 @@ class StateActionPredictor:
         f = tf.nn.relu(linear(f, size, "f1", normalized_columns_initializer(0.01)))
         f = linear(f, phi1.get_shape()[1].value, "flast", normalized_columns_initializer(0.01))
         self.forwardloss = 0.5 * tf.reduce_mean(
-            tf.square(tf.subtract(f, phi2)), 
+            tf.square(tf.subtract(f, phi2)),
             name='forwardloss'
         )
         self.forwardloss = self.forwardloss * 288.0  # Scale by feature dimension
@@ -519,11 +519,11 @@ class StateActionPredictor:
 
     def pred_act(self, s1: np.ndarray, s2: np.ndarray) -> np.ndarray:
         """Predict action from states.
-        
+
         Args:
             s1: First state
             s2: Second state
-            
+
         Returns:
             Predicted action probabilities
         """
@@ -532,12 +532,12 @@ class StateActionPredictor:
 
     def pred_bonus(self, s1: np.ndarray, s2: np.ndarray, asample: np.ndarray) -> float:
         """Predict curiosity bonus.
-        
+
         Args:
             s1: First state
             s2: Second state
             asample: Action taken
-            
+
         Returns:
             Curiosity bonus
         """
@@ -552,16 +552,16 @@ class StateActionPredictor:
 
 class StatePredictor:
     """State predictor for ICM baseline."""
-    
+
     def __init__(
-        self, 
-        ob_space: Tuple[int, ...], 
-        ac_space: int, 
-        design_head: str = 'universe', 
+        self,
+        ob_space: Tuple[int, ...],
+        ac_space: int,
+        design_head: str = 'universe',
         unsup_type: str = 'state'
     ):
         """Initialize state predictor.
-        
+
         Args:
             ob_space: Observation space shape
             ac_space: Action space size
@@ -586,7 +586,7 @@ class StatePredictor:
                 with tf.variable_scope(tf.get_variable_scope(), reuse=True):
                     phi2_aenc = universe_head(phi2)
         else:
-            raise ValueError(f"Only universe designHead implemented for state prediction baseline.")
+            raise ValueError("Only universe designHead implemented for state prediction baseline.")
 
         # Forward model: f(phi1,asample) -> phi2
         f = tf.concat(1, [phi1, asample])
@@ -595,11 +595,11 @@ class StatePredictor:
             f = inverse_universe_head(f, input_shape, n_convs=2)
         else:
             f = inverse_universe_head(f, input_shape)
-        
+
         self.forwardloss = 0.5 * tf.reduce_mean(tf.square(tf.subtract(f, phi2)), name='forwardloss')
         if self.state_aenc:
             self.aenc_bonus = 0.5 * tf.reduce_mean(
-                tf.square(tf.subtract(phi1, phi2_aenc)), 
+                tf.square(tf.subtract(phi1, phi2_aenc)),
                 name='aencBonus'
             )
         self.predstate = phi1
@@ -609,28 +609,28 @@ class StatePredictor:
 
     def pred_state(self, s1: np.ndarray, asample: np.ndarray) -> np.ndarray:
         """Predict next state.
-        
+
         Args:
             s1: Current state
             asample: Action taken
-            
+
         Returns:
             Predicted next state
         """
         sess = tf.get_default_session()
         return sess.run(
-            self.predstate, 
+            self.predstate,
             {self.s1: [s1], self.asample: [asample]}
         )[0, :]
 
     def pred_bonus(self, s1: np.ndarray, s2: np.ndarray, asample: np.ndarray) -> float:
         """Predict curiosity bonus.
-        
+
         Args:
             s1: First state
             s2: Second state
             asample: Action taken
-            
+
         Returns:
             Curiosity bonus
         """

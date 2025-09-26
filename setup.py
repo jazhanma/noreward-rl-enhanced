@@ -76,7 +76,7 @@ setup(
     },
     include_package_data=True,
     package_data={
-        "": ["*.wad", "*.gif", "*.md"],
+        "": ["*.wad", "*.gi", "*.md"],
     },
     zip_safe=False,
 )

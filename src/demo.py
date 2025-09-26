@@ -28,7 +28,7 @@ def inference(args):
 
             probs = tf.get_collection("probs")[0]
             sample = tf.get_collection("sample")[0]
-            vf = tf.get_collection("vf")[0]
+            vf = tf.get_collection("v")[0]
             state_out_0 = tf.get_collection("state_out_0")[0]
             state_out_1 = tf.get_collection("state_out_1")[0]
 

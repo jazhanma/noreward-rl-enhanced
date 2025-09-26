@@ -29,11 +29,11 @@ use_tf12_api = tf.__version__ >= "2.0.0"
 
 def discount(x: np.ndarray, gamma: float) -> np.ndarray:
     """Compute discounted returns.
-    
+
     Args:
         x: Array of rewards [r1, r2, r3, ..., rN]
         gamma: Discount factor
-        
+
     Returns:
         Array of discounted returns [r1 + r2*gamma + r3*gamma^2 + ...,
                                    r2 + r3*gamma + r4*gamma^2 + ...,
@@ -43,19 +43,19 @@ def discount(x: np.ndarray, gamma: float) -> np.ndarray:
 
 
 def process_rollout(
-    rollout: "PartialRollout", 
-    gamma: float, 
-    lambda_: float = 1.0, 
+    rollout: "PartialRollout",
+    gamma: float,
+    lambda_: float = 1.0,
     clip: bool = False
 ) -> "Batch":
     """Process a rollout to compute returns and advantages.
-    
+
     Args:
         rollout: The rollout to process
         gamma: Discount factor
         lambda_: GAE lambda parameter
         clip: Whether to clip rewards
-        
+
     Returns:
         Processed batch with advantages and returns
     """
@@ -73,8 +73,8 @@ def process_rollout(
         rewards_plus_v += np.asarray(rollout.bonuses + [0])
     if clip:
         rewards_plus_v[:-1] = np.clip(
-            rewards_plus_v[:-1], 
-            -constants['REWARD_CLIP'], 
+            rewards_plus_v[:-1],
+            -constants['REWARD_CLIP'],
             constants['REWARD_CLIP']
         )
     batch_r = discount(rewards_plus_v, gamma)[:-1]  # value network target
@@ -86,7 +86,7 @@ def process_rollout(
     if clip:
         rewards = np.clip(rewards, -constants['REWARD_CLIP'], constants['REWARD_CLIP'])
     vpred_t = np.asarray(rollout.values + [rollout.r])
-    
+
     # "Generalized Advantage Estimation": https://arxiv.org/abs/1506.02438
     # Eq (10): delta_t = Rt + gamma*V_{t+1} - V_t
     # Eq (16): batch_adv_t = delta_t + gamma*delta_{t+1} + gamma^2*delta_{t+2} + ...
@@ -103,10 +103,10 @@ Batch = namedtuple("Batch", ["si", "a", "adv", "r", "terminal", "features"])
 
 class PartialRollout:
     """A piece of a complete rollout for experience collection."""
-    
+
     def __init__(self, unsup: bool = False):
         """Initialize rollout.
-        
+
         Args:
             unsup: Whether this rollout uses unsupervised learning
         """
@@ -134,7 +134,7 @@ class PartialRollout:
         end_state: Optional[np.ndarray] = None,
     ) -> None:
         """Add a transition to the rollout.
-        
+
         Args:
             state: Current state
             action: Action taken
@@ -157,7 +157,7 @@ class PartialRollout:
 
     def extend(self, other: "PartialRollout") -> None:
         """Extend this rollout with another rollout.
-        
+
         Args:
             other: Another rollout to extend with
         """
@@ -176,7 +176,7 @@ class PartialRollout:
 
 class RunnerThread(threading.Thread):
     """Thread for running environment interactions."""
-    
+
     def __init__(
         self,
         env: Any,
@@ -189,7 +189,7 @@ class RunnerThread(threading.Thread):
         logger: Optional[Logger] = None,
     ):
         """Initialize runner thread.
-        
+
         Args:
             env: Environment to run
             policy: Policy network
@@ -217,7 +217,7 @@ class RunnerThread(threading.Thread):
 
     def start_runner(self, sess: tf.Session, summary_writer: Any) -> None:
         """Start the runner thread.
-        
+
         Args:
             sess: TensorFlow session
             summary_writer: Summary writer for TensorBoard
@@ -245,8 +245,8 @@ class RunnerThread(threading.Thread):
             self.logger,
         )
         while True:
-            # The timeout variable exists because apparently, if one worker dies, 
-            # the other workers won't die with it, unless the timeout is set to 
+            # The timeout variable exists because apparently, if one worker dies,
+            # the other workers won't die with it, unless the timeout is set to
             # some large number. This is an empirical observation.
             self.queue.put(next(rollout_provider), timeout=600.0)
 
@@ -263,7 +263,7 @@ def env_runner(
     logger: Optional[Logger] = None,
 ):
     """Environment runner for collecting experience.
-    
+
     Args:
         env: Environment to run
         policy: Policy network
@@ -274,7 +274,7 @@ def env_runner(
         env_wrap: Whether environment is wrapped
         no_reward: Whether to remove rewards
         logger: Logger for metrics
-        
+
     Yields:
         PartialRollout: Collected experience rollouts
     """
@@ -284,7 +284,7 @@ def env_runner(
     rewards = 0
     values = 0
     episode_start_time = time.time()
-    
+
     if predictor is not None:
         ep_bonus = 0
         life_bonus = 0
@@ -301,7 +301,7 @@ def env_runner(
             # Run environment: get action_index from sampled one-hot 'action'
             step_act = action.argmax()
             state, reward, terminal, truncated, info = env.step(step_act)
-            
+
             if no_reward:
                 reward = 0.0
             if render:
@@ -339,26 +339,26 @@ def env_runner(
                         position_x=info.get('POSITION_X'),
                         position_y=info.get('POSITION_Y'),
                     )
-                
+
                 # Print episode summary
                 if predictor is not None:
-                    print(f"Episode finished. Sum of shaped rewards: {rewards:.2f}. "
-                          f"Length: {length}. Bonus: {life_bonus:.4f}.")
+                    print("Episode finished. Sum of shaped rewards: {rewards:.2f}. "
+                          "Length: {length}. Bonus: {life_bonus:.4f}.")
                     life_bonus = 0
                 else:
-                    print(f"Episode finished. Sum of shaped rewards: {rewards:.2f}. "
-                          f"Length: {length}.")
-                
+                    print("Episode finished. Sum of shaped rewards: {rewards:.2f}. "
+                          "Length: {length}.")
+
                 if 'distance' in info:
-                    print(f'Mario Distance Covered: {info["distance"]}')
-                
+                    print('Mario Distance Covered: {info["distance"]}')
+
                 length = 0
                 rewards = 0
                 values = 0
                 terminal_end = True
                 last_features = policy.get_initial_features()  # reset lstm memory
                 episode_start_time = time.time()
-                
+
                 # Reset environment
                 if terminal or truncated or (timestep_limit and length >= timestep_limit):
                     last_state = env.reset()
@@ -390,7 +390,7 @@ def env_runner(
 
 class A3C:
     """Enhanced A3C implementation with modern logging and gymnasium support."""
-    
+
     def __init__(
         self,
         env: Any,
@@ -403,7 +403,7 @@ class A3C:
         logger: Optional[Logger] = None,
     ):
         """Initialize A3C trainer.
-        
+
         Args:
             env: Environment to train on
             task: Task index for distributed training
@@ -422,15 +422,15 @@ class A3C:
 
         predictor = None
         num_action = env.action_space.n
-        worker_device = f"/job:worker/task:{task}/cpu:0"
+        worker_device = "/job:worker/task:{task}/cpu:0"
 
         with tf.device(tf.train.replica_device_setter(1, worker_device=worker_device)):
             with tf.variable_scope("global"):
                 self.network = LSTMPolicy(env.observation_space.shape, num_action, design_head)
                 self.global_step = tf.get_variable(
-                    "global_step", 
-                    [], 
-                    tf.int32, 
+                    "global_step",
+                    [],
+                    tf.int32,
                     initializer=tf.constant_initializer(0, dtype=tf.int32),
                     trainable=False
                 )
@@ -466,18 +466,18 @@ class A3C:
             self.r = tf.placeholder(tf.float32, [None], name="r")
             log_prob_tf = tf.nn.log_softmax(pi.logits)
             prob_tf = tf.nn.softmax(pi.logits)
-            
+
             # 1) The "policy gradients" loss: its derivative is precisely the policy gradient
             # Notice that self.ac is a placeholder that is provided externally.
             # adv will contain the advantages, as calculated in process_rollout
             pi_loss = -tf.reduce_mean(tf.reduce_sum(log_prob_tf * self.ac, 1) * self.adv)  # Eq (19)
-            
+
             # 2) Loss of value function: l2_loss = (x-y)^2/2
             vf_loss = 0.5 * tf.reduce_mean(tf.square(pi.vf - self.r))  # Eq (28)
-            
+
             # 3) Entropy to ensure randomness
             entropy = -tf.reduce_mean(tf.reduce_sum(prob_tf * log_prob_tf, 1))
-            
+
             # Final A3C loss: lr of critic is half of actor
             self.loss = pi_loss + 0.5 * vf_loss - entropy * constants['ENTROPY_BETA']
 
@@ -499,7 +499,7 @@ class A3C:
                 if constants['POLICY_NO_BACKPROP_STEPS'] > 0:
                     grads = [
                         tf.scalar_mul(
-                            tf.to_float(tf.greater(self.global_step, constants['POLICY_NO_BACKPROP_STEPS'])), 
+                            tf.to_float(tf.greater(self.global_step, constants['POLICY_NO_BACKPROP_STEPS'])),
                             grads_i
                         ) for grads_i in grads
                     ]
@@ -555,8 +555,8 @@ class A3C:
             inc_step = self.global_step.assign_add(tf.shape(pi.x)[0])
 
             # Each worker has a different set of adam optimizer parameters
-            print(f"Optimizer: ADAM with lr: {constants['LEARNING_RATE']}")
-            print(f"Input observation shape: {env.observation_space.shape}")
+            print("Optimizer: ADAM with lr: {constants['LEARNING_RATE']}")
+            print("Input observation shape: {env.observation_space.shape}")
             opt = tf.train.AdamOptimizer(constants['LEARNING_RATE'])
             self.train_op = tf.group(opt.apply_gradients(grads_and_vars), inc_step)
 
@@ -572,7 +572,7 @@ class A3C:
 
     def start(self, sess: tf.Session, summary_writer: Any) -> None:
         """Start the A3C trainer.
-        
+
         Args:
             sess: TensorFlow session
             summary_writer: Summary writer for TensorBoard
@@ -582,7 +582,7 @@ class A3C:
 
     def pull_batch_from_queue(self) -> PartialRollout:
         """Take a rollout from the queue of the thread runner.
-        
+
         Returns:
             Rollout from the queue
         """
@@ -598,16 +598,16 @@ class A3C:
 
     def process(self, sess: tf.Session) -> None:
         """Process a rollout and update parameters.
-        
+
         Args:
             sess: TensorFlow session
         """
         sess.run(self.sync)  # Copy weights from shared to local
         rollout = self.pull_batch_from_queue()
         batch = process_rollout(
-            rollout, 
-            gamma=constants['GAMMA'], 
-            lambda_=constants['LAMBDA'], 
+            rollout,
+            gamma=constants['GAMMA'],
+            lambda_=constants['LAMBDA'],
             clip=self.env_wrap
         )
 
@@ -634,12 +634,12 @@ class A3C:
 
         fetched = sess.run(fetches, feed_dict=feed_dict)
         if batch.terminal:
-            print(f"Global Step Counter: {fetched[-1]}")
+            print("Global Step Counter: {fetched[-1]}")
 
         if should_compute_summary:
             self.summary_writer.add_summary(tf.Summary.FromString(fetched[0]), fetched[-1])
             self.summary_writer.flush()
-            
+
             # Log to Weights & Biases if available
             if self.logger:
                 # Extract metrics from summary
@@ -647,7 +647,7 @@ class A3C:
                 metrics = {}
                 for value in summary_proto.value:
                     metrics[value.tag] = value.simple_value
-                
+
                 self.logger.log_scalars(metrics, step=fetched[-1])
-        
+
         self.local_steps += 1

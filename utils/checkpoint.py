@@ -24,11 +24,11 @@ import tensorflow as tf
 class CheckpointManager:
     """
     Manages saving and loading of training checkpoints.
-    
+
     This class handles the complete state of a training run including
     model weights, optimizer state, training progress, and configuration.
     """
-    
+
     def __init__(
         self,
         save_dir: Union[str, Path],
@@ -38,7 +38,7 @@ class CheckpointManager:
     ):
         """
         Initialize checkpoint manager.
-        
+
         Args:
             save_dir: Directory to save checkpoints
             max_checkpoints: Maximum number of checkpoints to keep
@@ -49,18 +49,18 @@ class CheckpointManager:
         self.max_checkpoints = max_checkpoints
         self.save_interval = save_interval
         self.checkpoint_prefix = checkpoint_prefix
-        
+
         # Create save directory
         self.save_dir.mkdir(parents=True, exist_ok=True)
-        
+
         # Track checkpoint metadata
         self.checkpoint_metadata_file = self.save_dir / "checkpoint_metadata.json"
         self.metadata = self._load_metadata()
-        
+
         print(f"📁 Checkpoint manager initialized: {self.save_dir}")
-        print(f"   Save interval: {self.save_interval}")
-        print(f"   Max checkpoints: {self.max_checkpoints}")
-    
+        print("   Save interval: {self.save_interval}")
+        print("   Max checkpoints: {self.max_checkpoints}")
+
     def _load_metadata(self) -> Dict[str, Any]:
         """Load checkpoint metadata from file."""
         if self.checkpoint_metadata_file.exists():
@@ -68,23 +68,23 @@ class CheckpointManager:
                 with open(self.checkpoint_metadata_file, 'r') as f:
                     return json.load(f)
             except (json.JSONDecodeError, IOError) as e:
-                print(f"⚠️  Warning: Could not load checkpoint metadata: {e}")
-        
+                print("⚠️  Warning: Could not load checkpoint metadata: {e}")
+
         return {
             'checkpoints': [],
             'latest_checkpoint': None,
             'best_checkpoint': None,
             'training_start_time': None
         }
-    
+
     def _save_metadata(self) -> None:
         """Save checkpoint metadata to file."""
         try:
             with open(self.checkpoint_metadata_file, 'w') as f:
                 json.dump(self.metadata, f, indent=2)
         except IOError as e:
-            print(f"⚠️  Warning: Could not save checkpoint metadata: {e}")
-    
+            print("⚠️  Warning: Could not save checkpoint metadata: {e}")
+
     def _cleanup_old_checkpoints(self) -> None:
         """Remove old checkpoints to maintain max_checkpoints limit."""
         checkpoints = self.metadata.get('checkpoints', [])
@@ -95,12 +95,12 @@ class CheckpointManager:
                 checkpoint_path = self.save_dir / checkpoint['filename']
                 if checkpoint_path.exists():
                     checkpoint_path.unlink()
-                    print(f"🗑️  Removed old checkpoint: {checkpoint['filename']}")
-            
+                    print("🗑️  Removed old checkpoint: {checkpoint['filename']}")
+
             # Update metadata
             self.metadata['checkpoints'] = checkpoints[-self.max_checkpoints:]
             self._save_metadata()
-    
+
     def save_checkpoint(
         self,
         model: Any,
@@ -114,7 +114,7 @@ class CheckpointManager:
     ) -> str:
         """
         Save a training checkpoint.
-        
+
         Args:
             model: Model to save (TensorFlow model or checkpointable object)
             optimizer: Optimizer state to save
@@ -124,14 +124,14 @@ class CheckpointManager:
             config: Training configuration
             is_best: Whether this is the best checkpoint so far
             additional_data: Any additional data to save
-            
+
         Returns:
             Path to saved checkpoint
         """
         timestamp = int(time.time())
-        checkpoint_name = f"{self.checkpoint_prefix}_step_{step}_ep_{episode}_{timestamp}"
-        checkpoint_path = self.save_dir / f"{checkpoint_name}.ckpt"
-        
+        checkpoint_name = "{self.checkpoint_prefix}_step_{step}_ep_{episode}_{timestamp}"
+        checkpoint_path = self.save_dir / "{checkpoint_name}.ckpt"
+
         # Prepare checkpoint data
         checkpoint_data = {
             'step': step,
@@ -141,7 +141,7 @@ class CheckpointManager:
             'config': config or {},
             'additional_data': additional_data or {}
         }
-        
+
         # Save TensorFlow checkpoint
         if hasattr(model, 'save_weights'):
             # For Keras models
@@ -155,21 +155,21 @@ class CheckpointManager:
                 with open(checkpoint_path, 'wb') as f:
                     pickle.dump(model, f)
             except Exception as e:
-                print(f"⚠️  Warning: Could not save model: {e}")
+                print("⚠️  Warning: Could not save model: {e}")
                 return None
-        
+
         # Save optimizer state if provided
         if optimizer is not None:
-            optimizer_path = self.save_dir / f"{checkpoint_name}_optimizer.pkl"
+            optimizer_path = self.save_dir / "{checkpoint_name}_optimizer.pkl"
             try:
                 with open(optimizer_path, 'wb') as f:
                     pickle.dump(optimizer, f)
             except Exception as e:
-                print(f"⚠️  Warning: Could not save optimizer: {e}")
-        
+                print("⚠️  Warning: Could not save optimizer: {e}")
+
         # Save checkpoint metadata
         checkpoint_info = {
-            'filename': f"{checkpoint_name}.ckpt",
+            'filename': "{checkpoint_name}.ckpt",
             'step': step,
             'episode': episode,
             'timestamp': timestamp,
@@ -177,28 +177,28 @@ class CheckpointManager:
             'config': config or {},
             'is_best': is_best
         }
-        
+
         # Update metadata
         self.metadata['checkpoints'].append(checkpoint_info)
         self.metadata['latest_checkpoint'] = checkpoint_info
-        
+
         if is_best:
             self.metadata['best_checkpoint'] = checkpoint_info
-        
+
         # Set training start time if not set
         if self.metadata['training_start_time'] is None:
             self.metadata['training_start_time'] = timestamp
-        
+
         self._save_metadata()
         self._cleanup_old_checkpoints()
-        
-        print(f"💾 Checkpoint saved: {checkpoint_name}")
-        print(f"   Step: {step}, Episode: {episode}")
+
+        print("💾 Checkpoint saved: {checkpoint_name}")
+        print("   Step: {step}, Episode: {episode}")
         if metrics:
-            print(f"   Metrics: {metrics}")
-        
+            print("   Metrics: {metrics}")
+
         return str(checkpoint_path)
-    
+
     def load_checkpoint(
         self,
         model: Any,
@@ -208,13 +208,13 @@ class CheckpointManager:
     ) -> Tuple[Dict[str, Any], bool]:
         """
         Load a training checkpoint.
-        
+
         Args:
             model: Model to load weights into
             optimizer: Optimizer to load state into
             checkpoint_path: Specific checkpoint to load (if None, loads latest)
             load_best: Whether to load the best checkpoint instead of latest
-            
+
         Returns:
             Tuple of (checkpoint_data, success_flag)
         """
@@ -228,11 +228,11 @@ class CheckpointManager:
         else:
             print("❌ No checkpoint found to load")
             return {}, False
-        
+
         if not checkpoint_file.exists():
-            print(f"❌ Checkpoint file not found: {checkpoint_file}")
+            print("❌ Checkpoint file not found: {checkpoint_file}")
             return {}, False
-        
+
         try:
             # Load model weights
             if hasattr(model, 'load_weights'):
@@ -248,7 +248,7 @@ class CheckpointManager:
                     # Copy weights or state to the provided model
                     if hasattr(loaded_model, 'get_weights') and hasattr(model, 'set_weights'):
                         model.set_weights(loaded_model.get_weights())
-            
+
             # Load optimizer state if provided
             if optimizer is not None:
                 optimizer_file = checkpoint_file.with_suffix('.pkl').with_name(
@@ -260,29 +260,29 @@ class CheckpointManager:
                         # Restore optimizer state
                         if hasattr(optimizer, 'set_weights'):
                             optimizer.set_weights(optimizer_state)
-            
+
             # Load checkpoint metadata
             checkpoint_data = self._get_checkpoint_data(checkpoint_file)
-            
-            print(f"✅ Checkpoint loaded: {checkpoint_file.name}")
-            print(f"   Step: {checkpoint_data.get('step', 'Unknown')}")
-            print(f"   Episode: {checkpoint_data.get('episode', 'Unknown')}")
-            
+
+            print("✅ Checkpoint loaded: {checkpoint_file.name}")
+            print("   Step: {checkpoint_data.get('step', 'Unknown')}")
+            print("   Episode: {checkpoint_data.get('episode', 'Unknown')}")
+
             return checkpoint_data, True
-            
+
         except Exception as e:
-            print(f"❌ Error loading checkpoint: {e}")
+            print("❌ Error loading checkpoint: {e}")
             return {}, False
-    
+
     def _get_checkpoint_data(self, checkpoint_file: Path) -> Dict[str, Any]:
         """Get metadata for a specific checkpoint file."""
         checkpoint_name = checkpoint_file.stem
-        
+
         # Find checkpoint in metadata
         for checkpoint in self.metadata.get('checkpoints', []):
             if checkpoint['filename'] == checkpoint_file.name:
                 return checkpoint
-        
+
         # If not found in metadata, return basic info
         return {
             'step': 0,
@@ -292,27 +292,27 @@ class CheckpointManager:
             'config': {},
             'is_best': False
         }
-    
+
     def list_checkpoints(self) -> List[Dict[str, Any]]:
         """List all available checkpoints."""
         return self.metadata.get('checkpoints', [])
-    
+
     def get_latest_checkpoint(self) -> Optional[Dict[str, Any]]:
         """Get the latest checkpoint info."""
         return self.metadata.get('latest_checkpoint')
-    
+
     def get_best_checkpoint(self) -> Optional[Dict[str, Any]]:
         """Get the best checkpoint info."""
         return self.metadata.get('best_checkpoint')
-    
+
     def should_save_checkpoint(self, step: int, episode: int) -> bool:
         """Check if a checkpoint should be saved at this step/episode."""
         return (step > 0 and step % self.save_interval == 0) or (episode > 0 and episode % self.save_interval == 0)
-    
+
     def cleanup(self) -> None:
         """Clean up checkpoint manager resources."""
         self._save_metadata()
-        print(f"🧹 Checkpoint manager cleanup completed: {self.save_dir}")
+        print("🧹 Checkpoint manager cleanup completed: {self.save_dir}")
 
 
 def create_checkpoint_manager(
@@ -323,13 +323,13 @@ def create_checkpoint_manager(
 ) -> CheckpointManager:
     """
     Create a checkpoint manager instance.
-    
+
     Args:
         save_dir: Directory to save checkpoints
         max_checkpoints: Maximum number of checkpoints to keep
         save_interval: Save checkpoint every N steps/episodes
         checkpoint_prefix: Prefix for checkpoint files
-        
+
     Returns:
         CheckpointManager instance
     """
@@ -344,27 +344,27 @@ def create_checkpoint_manager(
 def find_latest_checkpoint(checkpoint_dir: Union[str, Path]) -> Optional[Path]:
     """
     Find the latest checkpoint in a directory.
-    
+
     Args:
         checkpoint_dir: Directory to search for checkpoints
-        
+
     Returns:
         Path to latest checkpoint, or None if not found
     """
     checkpoint_dir = Path(checkpoint_dir)
-    
+
     if not checkpoint_dir.exists():
         return None
-    
+
     # Look for checkpoint files
     checkpoint_files = list(checkpoint_dir.glob("*.ckpt"))
-    
+
     if not checkpoint_files:
         return None
-    
+
     # Sort by modification time (newest first)
     checkpoint_files.sort(key=lambda x: x.stat().st_mtime, reverse=True)
-    
+
     return checkpoint_files[0]
 
 
@@ -374,35 +374,35 @@ def cleanup_checkpoint_directory(
 ) -> None:
     """
     Clean up old checkpoints in a directory.
-    
+
     Args:
         checkpoint_dir: Directory to clean up
         keep_latest: Number of latest checkpoints to keep
     """
     checkpoint_dir = Path(checkpoint_dir)
-    
+
     if not checkpoint_dir.exists():
         return
-    
+
     checkpoint_files = list(checkpoint_dir.glob("*.ckpt"))
-    
+
     if len(checkpoint_files) <= keep_latest:
         return
-    
+
     # Sort by modification time (oldest first)
     checkpoint_files.sort(key=lambda x: x.stat().st_mtime)
-    
+
     # Remove oldest checkpoints
     files_to_remove = checkpoint_files[:-keep_latest]
     for file_path in files_to_remove:
         file_path.unlink()
-        print(f"🗑️  Removed old checkpoint: {file_path.name}")
+        print("🗑️  Removed old checkpoint: {file_path.name}")
 
 
 if __name__ == "__main__":
     # Test checkpoint manager
     print("🧪 Testing checkpoint manager...")
-    
+
     # Create test checkpoint manager
     test_dir = Path("test_checkpoints")
     manager = create_checkpoint_manager(
@@ -410,18 +410,18 @@ if __name__ == "__main__":
         max_checkpoints=3,
         save_interval=10
     )
-    
+
     # Test metadata operations
-    print(f"Checkpoints: {manager.list_checkpoints()}")
-    print(f"Latest: {manager.get_latest_checkpoint()}")
-    print(f"Best: {manager.get_best_checkpoint()}")
-    
+    print("Checkpoints: {manager.list_checkpoints()}")
+    print("Latest: {manager.get_latest_checkpoint()}")
+    print("Best: {manager.get_best_checkpoint()}")
+
     # Test cleanup
     manager.cleanup()
-    
+
     # Clean up test directory
     import shutil
     if test_dir.exists():
         shutil.rmtree(test_dir)
-    
+
     print("✅ Checkpoint manager test completed!")

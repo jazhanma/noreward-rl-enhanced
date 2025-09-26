@@ -362,7 +362,7 @@ class A3C(object):
 
             # each worker has a different set of adam optimizer parameters
             # TODO: make optimizer global shared, if needed
-            print("Optimizer: ADAM with lr: %f" % (constants['LEARNING_RATE']))
+            print("Optimizer: ADAM with lr: %" % (constants['LEARNING_RATE']))
             print("Input observation shape: ",env.observation_space.shape)
             opt = tf.train.AdamOptimizer(constants['LEARNING_RATE'])
             self.train_op = tf.group(opt.apply_gradients(grads_and_vars), inc_step)

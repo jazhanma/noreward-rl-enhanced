@@ -28,13 +28,13 @@ def create_env(
     **kwargs: Any
 ) -> gym.Env:
     """Create and configure an environment.
-    
+
     Args:
         env_id: Environment identifier
         client_id: Client identifier for distributed training
         remotes: Remote environment addresses
         **kwargs: Additional environment configuration
-        
+
     Returns:
         Configured gymnasium environment
     """
@@ -52,7 +52,7 @@ def create_env(
             return create_atari_env(env_id, **kwargs)
         return env
     except gym.error.Error:
-        logger.warning(f"Could not create environment {env_id} with gymnasium, trying legacy gym")
+        logger.warning("Could not create environment {env_id} with gymnasium, trying legacy gym")
         # Fallback to legacy gym if needed
         import gym as legacy_gym
         env = legacy_gym.make(env_id)
@@ -70,7 +70,7 @@ def create_doom(
     **_kwargs: Any,
 ) -> gym.Env:
     """Create VizDoom environment.
-    
+
     Args:
         env_id: Doom environment identifier
         client_id: Client identifier
@@ -79,7 +79,7 @@ def create_doom(
         outdir: Output directory for recordings
         no_life_reward: Whether to remove negative rewards
         ac_repeat: Action repeat count
-        
+
     Returns:
         Configured Doom environment
     """
@@ -92,20 +92,20 @@ def create_doom(
     # Map environment IDs to VizDoom scenarios
     doom_env_map = {
         "doom": "VizdoomMyWayHome-v0",
-        "doomsparse": "VizdoomMyWayHomeSparse-v0", 
+        "doomsparse": "VizdoomMyWayHomeSparse-v0",
         "doomverysparse": "VizdoomMyWayHomeVerySparse-v0",
         "doomdense": "VizdoomMyWayHomeDense-v0",
     }
-    
+
     actual_env_id = doom_env_map.get(env_id.lower(), "VizdoomMyWayHome-v0")
-    
+
     # VizDoom workaround: Simultaneously launching multiple vizdoom processes
     # makes program stuck, so use delays in multi-threading/processing
     client_id_int = int(client_id)
     time.sleep(client_id_int * 10)
-    
+
     env = gym.make(actual_env_id)
-    
+
     if record and outdir is not None:
         env = gym.wrappers.RecordVideo(env, outdir, episode_trigger=lambda x: True)
 
@@ -135,7 +135,7 @@ def create_mario(
     **_kwargs: Any,
 ) -> gym.Env:
     """Create Super Mario Bros environment.
-    
+
     Args:
         env_id: Mario environment identifier
         client_id: Client identifier
@@ -144,7 +144,7 @@ def create_mario(
         outdir: Output directory for recordings
         no_life_reward: Whether to remove negative rewards
         ac_repeat: Action repeat count
-        
+
     Returns:
         Configured Mario environment
     """
@@ -164,7 +164,7 @@ def create_mario(
     # so use delays in multi-threading/multi-processing
     client_id_int = int(client_id)
     time.sleep(client_id_int * 50)
-    
+
     env = gym.make(env_id)
     env = env_wrapper.MarioEnv(env)
 
@@ -196,19 +196,19 @@ def create_hard_exploration_atari(
     **_kwargs: Any,
 ) -> gym.Env:
     """Create hard exploration Atari environment.
-    
+
     Args:
         env_id: Atari environment identifier
         record: Whether to record episodes
         outdir: Output directory for recordings
-        
+
     Returns:
         Configured Atari environment
     """
     # Hard exploration Atari games
     hard_exploration_games = [
         "MontezumaRevenge-v5",
-        "Pitfall-v5", 
+        "Pitfall-v5",
         "PrivateEye-v5",
         "Solaris-v5",
         "Venture-v5",
@@ -219,18 +219,18 @@ def create_hard_exploration_atari(
         "Seaquest-v5",
         "SpaceInvaders-v5",
     ]
-    
+
     if env_id.lower() in [game.lower() for game in hard_exploration_games]:
         actual_env_id = env_id
     else:
         # Default to Montezuma's Revenge
         actual_env_id = "MontezumaRevenge-v5"
-    
+
     env = gym.make(actual_env_id)
-    
+
     if record and outdir is not None:
         env = gym.wrappers.RecordVideo(env, outdir, episode_trigger=lambda x: True)
-    
+
     # Apply Atari preprocessing
     env = gym.wrappers.AtariPreprocessing(
         env,
@@ -240,13 +240,13 @@ def create_hard_exploration_atari(
         grayscale_newaxis=False,
         scale_obs=False,
     )
-    
+
     # Apply frame stacking
     env = gym.wrappers.FrameStack(env, num_stack=4)
-    
+
     # Apply observation rescaling
     env = env_wrapper.AtariRescale42x42(env)
-    
+
     env = DiagnosticsInfo(env)
     return env
 
@@ -258,20 +258,20 @@ def create_atari_env(
     **_kwargs: Any,
 ) -> gym.Env:
     """Create standard Atari environment.
-    
+
     Args:
         env_id: Atari environment identifier
         record: Whether to record episodes
         outdir: Output directory for recordings
-        
+
     Returns:
         Configured Atari environment
     """
     env = gym.make(env_id)
-    
+
     if record and outdir is not None:
         env = gym.wrappers.RecordVideo(env, outdir, episode_trigger=lambda x: True)
-    
+
     # Apply Atari preprocessing
     env = gym.wrappers.AtariPreprocessing(
         env,
@@ -281,13 +281,13 @@ def create_atari_env(
         grayscale_newaxis=False,
         scale_obs=False,
     )
-    
+
     # Apply frame stacking
     env = gym.wrappers.FrameStack(env, num_stack=4)
-    
+
     # Apply observation rescaling
     env = env_wrapper.AtariRescale42x42(env)
-    
+
     env = DiagnosticsInfo(env)
     return env
 
@@ -321,7 +321,7 @@ class DiagnosticsInfo(gym.Wrapper):
     ) -> Tuple[ObsType, float, bool, bool, Dict[str, Any]]:
         """Step environment and collect diagnostics."""
         obs, reward, terminated, truncated, info = self.env.step(action)
-        
+
         to_log = {}
         if self._episode_length == 0:
             self._episode_time = time.time()
